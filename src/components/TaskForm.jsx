@@ -1,23 +1,36 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import handleApiResponse from '../utils/handleApiResponse';
 
 const TaskForm = ({ onAddTask }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newTask = {
-      id: Date.now(),
-      title,
-      description,
-      dueDate,
-      completed: false,
-    };
-    onAddTask(newTask);
-    setTitle('');
-    setDescription('');
-    setDueDate('');
+
+    try {
+      const newTask = {
+        title,
+        description,
+        dueDate,
+        completed: false,
+      };
+
+      const response = await axios.post('http://localhost:5000/tasks', newTask);
+      const createdTask = response.data;
+
+      onAddTask(createdTask);
+      handleApiResponse(response.status, 'Tarea creada exitosamente');
+
+      setTitle('');
+      setDescription('');
+      setDueDate('');
+    } catch (error) {
+      console.error('Error al agregar la tarea:', error);
+      handleApiResponse(error.response.status, 'Error al crear la tarea');
+    }
   };
 
   return (
